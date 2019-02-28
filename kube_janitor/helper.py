@@ -15,6 +15,7 @@ TIME_UNIT_TO_SECONDS = {
 FACTOR_TO_TIME_UNIT = list(sorted([(v, k) for k, v in TIME_UNIT_TO_SECONDS.items()], reverse=True))
 TTL_PATTERN = re.compile(r'^(\d+)([smhdw])$')
 DATETIME_PATTERN = re.compile(r'^(\d{4})-(\d{2})-(\d{2})(T)(\d{2})(:)(\d{2})(:)(\d{2})(Z)$')
+DATE_PATTERN = re.compile(r'^(\d{4})-(\d{2})-(\d{2})$')
 
 
 def parse_ttl(ttl: str) -> int:
@@ -36,10 +37,15 @@ def parse_ttl(ttl: str) -> int:
 
 def parse_expiry(expiry: str) -> datetime:
     match = DATETIME_PATTERN.match(expiry)
-    if not match:
-        raise ValueError(
-            f'expiry value "{expiry}" does not conform format 2019-02-25T09:26:14Z')
-    return datetime.datetime.strptime(expiry, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=None)
+    if match:
+        return datetime.datetime.strptime(expiry, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=None)
+    else:
+        match = DATE_PATTERN.match(expiry)
+        if match:
+            return datetime.datetime.strptime(expiry, '%Y-%m-%d').replace(tzinfo=None)
+        else:
+            raise ValueError(
+                f'expiry value "{expiry}" does not match format 2019-02-25T09:26:14Z or 2019-02-25')
 
 
 def format_duration(seconds: int) -> str:
