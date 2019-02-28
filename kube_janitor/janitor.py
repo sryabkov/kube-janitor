@@ -134,7 +134,7 @@ def handle_resource_on_expiry(resource, rules, dry_run: bool):
             if datetime.datetime.utcnow() > expiry_timestamp:
                 message = f'{resource.kind} {resource.name} expired on {expiry} and will be deleted ({reason})'
                 logger.info(message)
-                create_event(resource, message, "ExpiryDateReached", dry_run=dry_run)
+                create_event(resource, message, "ExpiryTimeReached", dry_run=dry_run)
                 delete(resource, dry_run=dry_run)
                 counter[f'{resource.endpoint}-deleted'] = 1
             else:

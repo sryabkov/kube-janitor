@@ -229,7 +229,7 @@ def test_clean_up_custom_resource_on_expiry():
     _, kwargs = api_mock.post.call_args
     assert kwargs['url'] == 'events'
     data = json.loads(kwargs['data'])
-    assert data['reason'] == 'ExpiryDateReached'
+    assert data['reason'] == 'ExpiryTimeReached'
     assert 'annotation janitor/expires is set' in data['message']
     involvedObject = {'kind': 'CustomFoo', 'name': 'foo-1', 'namespace': 'ns-1', 'apiVersion': 'srcco.de/v1', 'resourceVersion': None, 'uid': None}
     assert data['involvedObject'] == involvedObject
