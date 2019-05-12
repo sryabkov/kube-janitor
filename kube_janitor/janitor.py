@@ -1,9 +1,12 @@
 import datetime
+import hashlib
+import json
 import logging
+import time
 from collections import Counter
 
 import pykube
-from pykube import Event, Namespace
+from pykube import ConfigMap, Event, Namespace, ObjectDoesNotExist
 
 from .helper import format_duration, parse_expiry, parse_ttl
 from .resources import get_namespaced_resource_types
@@ -229,6 +232,55 @@ def clean_up(api,
                         logger.debug(f'Skipping {resource.kind} {resource.namespace}/{resource.name}')
             except Exception as e:
                 logger.error(f'Could not list {_type.kind} objects: {e}')
+
+    if track_last_update_time:
+        # TODO: correct namespace
+        try:
+            cm = ConfigMap.objects(api).get(name='kube-janitor-update-times')
+        except ObjectDoesNotExist:
+            # no previous ConfigMap object exists
+            cm = None
+            data = {}
+        else:
+            try:
+                data = json.loads(cm.obj['data']['update-times'])
+            except Exception as e:
+                logger.error(f'Could not load JSON object: {e}')
+                cm = None
+                data = {}
+        keys = set()
+        for resource in filtered_resources:
+            if resource.endpoint in track_last_update_time:
+                key = f'{resource.namespace}/{resource.name}'
+                keys.add(key)
+                h = hashlib.md5()
+                # Kubernetes systems-generated string to uniquely identify objects
+                h.update(resource.metadata['uid'].encode('utf-8'))
+                # hash labels and spec
+                h.update(json.dumps(resource.labels, sort_keys=True).encode('utf-8'))
+                h.update(json.dumps(resource.obj.get('spec'), sort_keys=True).encode('utf-8'))
+                current_hash = h.hexdigest()
+                old_hash, last_update_time = data.get(key, [None, 0])
+                if current_hash != old_hash:
+                    data[key] = [current_hash, int(time.time())]
+        # remove data for resources which are no longer tracked or were deleted
+        for key in list(data.keys()):
+            if key not in keys:
+                del data[key]
+        new_value = json.dumps(data, sort_keys=True)
+        if cm:
+            # only update if necessary
+            if cm.obj['data']['update-times'] != new_value:
+                cm.obj['data']['update-times'] = new_value
+                cm.update()
+        else:
+            obj = {
+                'apiVersion': 'v1',
+                'kind': 'ConfigMap',
+                'metadata': {'name': 'kube-janitor-update-times'},
+                'data': {'update-times': new_value}
+            }
+            ConfigMap(api, obj).create()
 
     for resource in filtered_resources:
         counter.update(handle_resource_on_ttl(resource, rules, delete_notification, dry_run))
