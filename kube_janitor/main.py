@@ -31,11 +31,11 @@ def main(args=None):
         rules = []
 
     return run_loop(args.once, args.include_resources, args.exclude_resources, args.include_namespaces,
-                    args.exclude_namespaces, rules, args.interval, args.delete_notification, args.dry_run)
+                    args.exclude_namespaces, rules, args.interval, args.delete_notification, args.track_last_update_time, args.dry_run)
 
 
 def run_loop(run_once, include_resources, exclude_resources, include_namespaces, exclude_namespaces,
-             rules, interval, delete_notification, dry_run):
+             rules, interval, delete_notification, track_last_update_time, dry_run):
     handler = shutdown.GracefulShutdown()
     while True:
         try:
@@ -48,6 +48,7 @@ def run_loop(run_once, include_resources, exclude_resources, include_namespaces,
                   exclude_namespaces=frozenset(exclude_namespaces.split(',')),
                   rules=rules,
                   delete_notification=delete_notification,
+                  track_last_update_time=frozenset(track_last_update_time.split(',')),
                   dry_run=dry_run)
         except Exception as e:
             logger.exception('Failed to clean up: %s', e)

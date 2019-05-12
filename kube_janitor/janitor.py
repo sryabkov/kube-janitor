@@ -196,6 +196,7 @@ def clean_up(api,
              exclude_namespaces: frozenset,
              rules: list,
              delete_notification: int,
+             track_last_update_time: frozenset,
              dry_run: bool):
 
     counter = Counter()

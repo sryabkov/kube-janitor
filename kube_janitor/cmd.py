@@ -24,4 +24,6 @@ def get_parser():
                         default=os.getenv('EXCLUDE_NAMESPACES', DEFAULT_EXCLUDE_NAMESPACES))
     parser.add_argument('--rules-file', help='Load TTL rules from given file path',
                         default=os.getenv('RULES_FILE'))
+    parser.add_argument('--track-last-update-time', help='Track time of last update for these Kubernetes resources (comma separated list, e.g. "deployments")',
+                        default=os.getenv('TRACK_LAST_UPDATE_TIME', ''))
     return parser
