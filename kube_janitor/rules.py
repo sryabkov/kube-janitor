@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Rule(collections.namedtuple("Rule", ["id", "resources", "jmespath", "ttl"])):
+    @staticmethod
     def from_entry(entry: dict):
         id_ = entry["id"]
         if not RULE_ID_PATTERN.match(id_):

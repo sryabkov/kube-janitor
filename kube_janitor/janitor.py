@@ -47,14 +47,16 @@ def matches_resource_filter(
     )
 
 
-def get_ttl_expiry_time(resource, ttl_seconds: int) -> datetime:
+def get_ttl_expiry_time(resource, ttl_seconds: int) -> datetime.datetime:
     creation_time = datetime.datetime.strptime(
         resource.metadata["creationTimestamp"], "%Y-%m-%dT%H:%M:%SZ"
     )
     return creation_time + datetime.timedelta(seconds=ttl_seconds)
 
 
-def get_delete_notification_time(expiry_timestamp, delete_notification) -> datetime:
+def get_delete_notification_time(
+    expiry_timestamp, delete_notification
+) -> datetime.datetime:
     return expiry_timestamp - datetime.timedelta(seconds=delete_notification)
 
 
@@ -85,7 +87,9 @@ def utcnow():
     return datetime.datetime.utcnow()
 
 
-def send_delete_notification(resource, reason: str, expire: datetime, dry_run: bool):
+def send_delete_notification(
+    resource, reason: str, expire: datetime.datetime, dry_run: bool
+):
     formatted_expire_datetime = expire.strftime("%Y-%m-%dT%H:%M:%SZ")
     message = f"{resource.kind} {resource.name} will be deleted at {formatted_expire_datetime} ({reason})"
     logger.info(message)
@@ -246,7 +250,7 @@ def clean_up(
     dry_run: bool,
 ):
 
-    counter = Counter()
+    counter: Counter = Counter()
 
     for namespace in Namespace.objects(api):
         if matches_resource_filter(
@@ -267,7 +271,7 @@ def clean_up(
         else:
             logger.debug(f"Skipping {namespace.kind} {namespace}")
 
-    already_seen = set()
+    already_seen: set = set()
 
     filtered_resources = []
 

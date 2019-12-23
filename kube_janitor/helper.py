@@ -42,7 +42,7 @@ def parse_ttl(ttl: str) -> int:
     return value * multiplier
 
 
-def parse_expiry(expiry: str) -> datetime:
+def parse_expiry(expiry: str) -> datetime.datetime:
     for pattern in DATETIME_PATTERNS:
         try:
             return datetime.datetime.strptime(expiry, pattern).replace(tzinfo=None)
