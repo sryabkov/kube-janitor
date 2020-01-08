@@ -78,7 +78,7 @@ repos:
         exclude: >
             (?x)^(
                 ^{{.*}}.*\.yaml$|
-                ^helm/.*$
+                ^helm/templates/.*$
             )
         #
 
