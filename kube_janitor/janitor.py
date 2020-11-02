@@ -109,34 +109,34 @@ def send_delete_notification(
 
 
 def create_event(resource, message: str, reason: str, dry_run: bool):
-    now = utcnow()
-    timestamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-    event = Event(
-        resource.api,
-        {
-            "metadata": {
-                "namespace": resource.namespace,
-                "generateName": "kube-janitor-",
-            },
-            "type": "Normal",
-            "count": 1,
-            "firstTimestamp": timestamp,
-            "lastTimestamp": timestamp,
-            "reason": reason,
-            "involvedObject": {
-                "apiVersion": resource.version,
-                "name": resource.name,
-                "namespace": resource.namespace,
-                "kind": resource.kind,
-                "resourceVersion": resource.metadata.get("resourceVersion"),
-                # https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
-                "uid": resource.metadata.get("uid"),
-            },
-            "message": message,
-            "source": {"component": "kube-janitor"},
-        },
-    )
     if not dry_run:
+        now = utcnow()
+        timestamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        event = Event(
+            resource.api,
+            {
+                "metadata": {
+                    "namespace": resource.namespace,
+                    "generateName": "kube-janitor-",
+                },
+                "type": "Normal",
+                "count": 1,
+                "firstTimestamp": timestamp,
+                "lastTimestamp": timestamp,
+                "reason": reason,
+                "involvedObject": {
+                    "apiVersion": resource.version,
+                    "name": resource.name,
+                    "namespace": resource.namespace,
+                    "kind": resource.kind,
+                    "resourceVersion": resource.metadata.get("resourceVersion"),
+                    # https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
+                    "uid": resource.metadata.get("uid"),
+                },
+                "message": message,
+                "source": {"component": "kube-janitor"},
+            },
+        )
         try:
             event.create()
         except Exception as e:
